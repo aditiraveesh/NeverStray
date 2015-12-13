@@ -26,9 +26,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-public class PlaceAutocompleteAdapter
-        extends ArrayAdapter<AutocompletePrediction> implements Filterable {
-
+public class PlaceAutocompleteAdapter extends ArrayAdapter<AutocompletePrediction> implements Filterable {
     private static final String TAG = "PlaceAutocomplete";
     private static final CharacterStyle STYLE_BOLD = new StyleSpan(Typeface.BOLD);
     private ArrayList<AutocompletePrediction> mResultList;
@@ -42,10 +40,6 @@ public class PlaceAutocompleteAdapter
         mGoogleApiClient = googleApiClient;
         mBounds = bounds;
         mPlaceFilter = filter;
-    }
-
-    public void setBounds(LatLngBounds bounds) {
-        mBounds = bounds;
     }
 
     @Override
@@ -114,8 +108,7 @@ public class PlaceAutocompleteAdapter
                             .getAutocompletePredictions(mGoogleApiClient, constraint.toString(),
                                     mBounds, mPlaceFilter);
 
-            AutocompletePredictionBuffer autocompletePredictions = results
-                    .await(60, TimeUnit.SECONDS);
+            AutocompletePredictionBuffer autocompletePredictions = results.await(60, TimeUnit.SECONDS);
 
             final Status status = autocompletePredictions.getStatus();
             if (!status.isSuccess()) {
@@ -125,9 +118,6 @@ public class PlaceAutocompleteAdapter
                 autocompletePredictions.release();
                 return null;
             }
-
-            Log.i(TAG, "Query completed. Received " + autocompletePredictions.getCount()
-                    + " predictions.");
 
             return DataBufferUtils.freezeAndClose(autocompletePredictions);
         }

@@ -24,10 +24,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener {
-    private GoogleMap mMap;
     private static final String LOG_TAG = "Google Places";
     protected GoogleApiClient mGoogleApiClient;
-    private AutoCompleteTextView mAutocompleteView;
     private PlaceAutocompleteAdapter mAdapter;
 
     private static final LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(
@@ -43,32 +41,26 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.On
 
         setContentView(R.layout.activity_maps);
 
-        mAutocompleteView = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView);
+        AutoCompleteTextView mAutocompleteView = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView);
         mAutocompleteView.setOnItemClickListener(mAutocompleteClickListener);
 
         mAdapter = new PlaceAutocompleteAdapter(this, mGoogleApiClient, BOUNDS_GREATER_SYDNEY, null);
         mAutocompleteView.setAdapter(mAdapter);
     }
 
-    private AdapterView.OnItemClickListener mAutocompleteClickListener
-            = new AdapterView.OnItemClickListener() {
+    private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             final AutocompletePrediction item = mAdapter.getItem(position);
             final String placeId = item.getPlaceId();
-            final CharSequence primaryText = item.getPrimaryText(null);
 
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
                     .getPlaceById(mGoogleApiClient, placeId);
             placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
-
-            Toast.makeText(getApplicationContext(), "Clicked: " + primaryText,
-                    Toast.LENGTH_SHORT).show();
         }
     };
 
-    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback
-            = new ResultCallback<PlaceBuffer>() {
+    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
         @Override
         public void onResult(PlaceBuffer places) {
             if (!places.getStatus().isSuccess()) {
@@ -77,14 +69,10 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.On
                 return;
             }
             final Place place = places.get(0);
-
-            Log.i(LOG_TAG, "Place details received: " + place.getLatLng());
-
             LatLng placeLatLong = place.getLatLng();
-            Log.i(LOG_TAG, String.valueOf(mMap));
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 
-            mMap = mapFragment.getMap();
+            GoogleMap mMap = mapFragment.getMap();
             mMap.addMarker(new MarkerOptions().position(placeLatLong));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(placeLatLong));
 

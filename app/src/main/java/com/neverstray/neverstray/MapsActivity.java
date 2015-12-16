@@ -26,10 +26,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapsActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener {
     private static final String LOG_TAG = "Google Places";
     protected GoogleApiClient mGoogleApiClient;
-    private PlaceAutocompleteAdapter mAdapter;
+    private PlaceAutocompleteAdapter mAdapterForSource;
+    private PlaceAutocompleteAdapter mAdapterForDestination;
+    private Place sourcePlace;
+    private Place destinationPlace;
 
     private static final LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(
-            new LatLng(-34.041458, 150.790100), new LatLng(-33.682247, 151.383362));
+            new LatLng(-34.041458, 150.790100), new LatLng(15, 75));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,26 +44,44 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.On
 
         setContentView(R.layout.activity_maps);
 
-        AutoCompleteTextView mAutocompleteView = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView);
-        mAutocompleteView.setOnItemClickListener(mAutocompleteClickListener);
+        AutoCompleteTextView mAutocompleteViewForSource = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextViewSource);
+        mAutocompleteViewForSource.setOnItemClickListener(mAutocompleteClickListenerForSource);
 
-        mAdapter = new PlaceAutocompleteAdapter(this, mGoogleApiClient, BOUNDS_GREATER_SYDNEY, null);
-        mAutocompleteView.setAdapter(mAdapter);
+        mAdapterForSource = new PlaceAutocompleteAdapter(this, mGoogleApiClient, BOUNDS_GREATER_SYDNEY, null);
+        mAutocompleteViewForSource.setAdapter(mAdapterForSource);
+
+        AutoCompleteTextView mAutocompleteViewForDestination = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextViewDestination);
+        mAutocompleteViewForDestination.setOnItemClickListener(mAutocompleteClickListenerForDestination);
+
+        mAdapterForDestination = new PlaceAutocompleteAdapter(this, mGoogleApiClient, BOUNDS_GREATER_SYDNEY, null);
+        mAutocompleteViewForDestination.setAdapter(mAdapterForDestination);
     }
 
-    private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
+    private AdapterView.OnItemClickListener mAutocompleteClickListenerForSource = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            final AutocompletePrediction item = mAdapter.getItem(position);
+            final AutocompletePrediction item = mAdapterForSource.getItem(position);
             final String placeId = item.getPlaceId();
 
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
                     .getPlaceById(mGoogleApiClient, placeId);
-            placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
+            placeResult.setResultCallback(mUpdatePlaceDetailsCallbackForSource);
         }
     };
 
-    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
+    private AdapterView.OnItemClickListener mAutocompleteClickListenerForDestination = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            final AutocompletePrediction item = mAdapterForDestination.getItem(position);
+            final String placeId = item.getPlaceId();
+
+            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
+                    .getPlaceById(mGoogleApiClient, placeId);
+            placeResult.setResultCallback(mUpdatePlaceDetailsCallbackForDestination);
+        }
+    };
+
+    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallbackForSource = new ResultCallback<PlaceBuffer>() {
         @Override
         public void onResult(PlaceBuffer places) {
             if (!places.getStatus().isSuccess()) {
@@ -68,15 +89,34 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.On
                 places.release();
                 return;
             }
-            final Place place = places.get(0);
-            LatLng placeLatLong = place.getLatLng();
+            sourcePlace = places.get(0);
+            LatLng placeLatLong = sourcePlace.getLatLng();
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+
+            GoogleMap mMap = mapFragment.getMap();
+            mMap.addMarker(new MarkerOptions().position(placeLatLong));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(placeLatLong));
+        }
+    };
+
+    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallbackForDestination = new ResultCallback<PlaceBuffer>() {
+        @Override
+        public void onResult(PlaceBuffer places) {
+            if (!places.getStatus().isSuccess()) {
+                Log.e(LOG_TAG, "Place query did not complete. Error: " + places.getStatus().toString());
+                places.release();
+                return;
+            }
+            destinationPlace = places.get(0);
+            LatLng placeLatLong = destinationPlace.getLatLng();
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 
             GoogleMap mMap = mapFragment.getMap();
             mMap.addMarker(new MarkerOptions().position(placeLatLong));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(placeLatLong));
 
-            places.release();
+            DirectionsRenderer directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), mMap);
+            directionsRenderer.foo();
         }
     };
 

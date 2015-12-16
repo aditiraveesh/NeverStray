@@ -14,12 +14,19 @@
         android:padding="20dp">
 
         <AutoCompleteTextView
-            android:id="@+id/autoCompleteTextView"
+            android:id="@+id/autoCompleteTextViewSource"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10">
 
             <requestFocus />
+        </AutoCompleteTextView>
+
+        <AutoCompleteTextView
+            android:id="@+id/autoCompleteTextViewDestination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10">
         </AutoCompleteTextView>
     </LinearLayout>
 </fragment>

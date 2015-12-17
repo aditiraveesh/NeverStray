@@ -6,7 +6,9 @@ import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -39,6 +41,17 @@ public class DirectionsRenderer {
         if (googleMap != null) {
             googleMap.addMarker(new MarkerOptions().position(origin).title("Origin"));
             googleMap.addMarker(new MarkerOptions().position(destination).title("Destination"));
+
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(origin.latitude, origin.longitude), 17));
+
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(origin.latitude, origin.longitude))
+                    .zoom(17)
+                    .bearing(90)
+                    .tilt(40)
+                    .build();
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
     }
 
@@ -46,9 +59,7 @@ public class DirectionsRenderer {
         String sensor = "sensor=false";
         String params = sensor + "&origin=" + origin.latitude + "," + origin.longitude + "&destination=" + destination.latitude + "," + destination.longitude;
         String output = "json";
-        String url = "https://maps.googleapis.com/maps/api/directions/"
-                + output + "?" + params;
-        return url;
+        return "https://maps.googleapis.com/maps/api/directions/" + output + "?" + params;
     }
 
     private class ReadTask extends AsyncTask<String, Void, String> {
@@ -96,7 +107,6 @@ public class DirectionsRenderer {
             ArrayList<LatLng> points = null;
             PolylineOptions polyLineOptions = new PolylineOptions();
 
-            // traversing through routes
             for (int i = 0; i < routes.size(); i++) {
                 points = new ArrayList<LatLng>();
                 List<HashMap<String, String>> path = routes.get(i);
@@ -112,8 +122,8 @@ public class DirectionsRenderer {
                 }
 
                 polyLineOptions.addAll(points);
-                polyLineOptions.width(2);
-                polyLineOptions.color(Color.BLUE);
+                polyLineOptions.width(4);
+                polyLineOptions.color(Color.GREEN);
             }
 
             googleMap.addPolyline(polyLineOptions);

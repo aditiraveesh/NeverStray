@@ -89,13 +89,9 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.On
                 places.release();
                 return;
             }
-            sourcePlace = places.get(0);
-            LatLng placeLatLong = sourcePlace.getLatLng();
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 
-            GoogleMap mMap = mapFragment.getMap();
-            mMap.addMarker(new MarkerOptions().position(placeLatLong));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(placeLatLong));
+            sourcePlace = places.get(0);
+            addMarkerOn(sourcePlace);
         }
     };
 
@@ -108,16 +104,23 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.On
                 return;
             }
             destinationPlace = places.get(0);
-            LatLng placeLatLong = destinationPlace.getLatLng();
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+            addMarkerOn(destinationPlace);
 
-            GoogleMap mMap = mapFragment.getMap();
-            mMap.addMarker(new MarkerOptions().position(placeLatLong));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(placeLatLong));
-
-            DirectionsRenderer directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), mMap);
+            DirectionsRenderer directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), getMap());
             directionsRenderer.foo();
         }
+    };
+
+    private void addMarkerOn(Place place) {
+        LatLng placeLatLong = place.getLatLng();
+        GoogleMap mMap = getMap();
+        mMap.addMarker(new MarkerOptions().position(placeLatLong));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(placeLatLong));
+    };
+
+    private GoogleMap getMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        return mapFragment.getMap();
     };
 
     @Override

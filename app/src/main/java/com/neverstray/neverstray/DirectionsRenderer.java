@@ -8,7 +8,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -22,6 +21,7 @@ public class DirectionsRenderer {
     private GoogleMap googleMap;
     private LatLng origin;
     private LatLng destination;
+    protected ArrayList polylinePoints;
 
     DirectionsRenderer(LatLng origin, LatLng destination, GoogleMap googleMap) {
         this.origin = origin;
@@ -104,11 +104,10 @@ public class DirectionsRenderer {
 
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> routes) {
-            ArrayList<LatLng> points = null;
             PolylineOptions polyLineOptions = new PolylineOptions();
 
             for (int i = 0; i < routes.size(); i++) {
-                points = new ArrayList<LatLng>();
+                polylinePoints = new ArrayList<LatLng>();
                 List<HashMap<String, String>> path = routes.get(i);
 
                 for (int j = 0; j < path.size(); j++) {
@@ -118,13 +117,17 @@ public class DirectionsRenderer {
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
 
-                    points.add(position);
+                    polylinePoints.add(position);
                 }
 
-                polyLineOptions.addAll(points);
+                polyLineOptions.addAll(polylinePoints);
                 polyLineOptions.width(4);
                 polyLineOptions.color(Color.GREEN);
             }
+
+            PathJSONParser pathJSONParser = new PathJSONParser();
+            boolean isOnPath = pathJSONParser.isLocationOnEdgeOrPath(destination, polylinePoints, false, 1000);
+            Log.i("On path", String.valueOf(isOnPath));
 
             googleMap.addPolyline(polyLineOptions);
         }

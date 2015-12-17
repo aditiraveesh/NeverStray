@@ -1,5 +1,6 @@
 package com.neverstray.neverstray;
 
+import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +13,9 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
@@ -23,13 +27,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener {
+public class MapsActivity extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final String LOG_TAG = "Google Places";
     protected GoogleApiClient mGoogleApiClient;
     private PlaceAutocompleteAdapter mAdapterForSource;
     private PlaceAutocompleteAdapter mAdapterForDestination;
     private Place sourcePlace;
     private Place destinationPlace;
+    private DirectionsRenderer directionsRenderer;
 
     private static final LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(
             new LatLng(-34.041458, 150.790100), new LatLng(15, 75));
@@ -38,8 +43,11 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, 0, this)
+                .enableAutoManage(this, this)
                 .addApi(Places.GEO_DATA_API)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
                 .build();
 
         setContentView(R.layout.activity_maps);
@@ -55,6 +63,20 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.On
 
         mAdapterForDestination = new PlaceAutocompleteAdapter(this, mGoogleApiClient, BOUNDS_GREATER_SYDNEY, null);
         mAutocompleteViewForDestination.setAdapter(mAdapterForDestination);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    protected LocationRequest createLocationRequest() {
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        return mLocationRequest;
     }
 
     private AdapterView.OnItemClickListener mAutocompleteClickListenerForSource = new AdapterView.OnItemClickListener() {
@@ -106,7 +128,7 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.On
             destinationPlace = places.get(0);
             addMarkerOn(destinationPlace);
 
-            DirectionsRenderer directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), getMap());
+            directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), getMap());
             directionsRenderer.foo();
         }
     };
@@ -131,5 +153,25 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.On
         Toast.makeText(this,
                 "Could not connect to Google API Client: Error " + connectionResult.getErrorCode(),
                 Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.i("Location", "Has changed");
+        LatLng currentLocation = (new LatLng(location.getLatitude(), location.getLongitude()));
+        GoogleMap mMap = getMap();
+        mMap.addMarker(new MarkerOptions().position(currentLocation));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        LocationRequest mLocationRequest = createLocationRequest();
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i("Location", "Connection suspended to google maps");
     }
 }

@@ -34,6 +34,7 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
     private PlaceAutocompleteAdapter mAdapterForDestination;
     private Place sourcePlace;
     private Place destinationPlace;
+    private DirectionsRenderer directionsRenderer;
 
     private static final LatLngBounds BOUNDS = new LatLngBounds(
             new LatLng(-34.041458, 150.790100), new LatLng(15, 75));
@@ -84,8 +85,7 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
             final AutocompletePrediction item = mAdapterForSource.getItem(position);
             final String placeId = item.getPlaceId();
 
-            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
-                    .getPlaceById(mGoogleApiClient, placeId);
+            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId);
             placeResult.setResultCallback(mUpdatePlaceDetailsCallbackForSource);
         }
     };
@@ -96,8 +96,7 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
             final AutocompletePrediction item = mAdapterForDestination.getItem(position);
             final String placeId = item.getPlaceId();
 
-            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
-                    .getPlaceById(mGoogleApiClient, placeId);
+            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId);
             placeResult.setResultCallback(mUpdatePlaceDetailsCallbackForDestination);
         }
     };
@@ -127,7 +126,7 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
             destinationPlace = places.get(0);
             addMarkerOn(destinationPlace);
 
-            DirectionsRenderer directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), getMap());
+            directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), getMap());
             directionsRenderer.foo();
         }
     };
@@ -146,12 +145,8 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.e(LOG_TAG, "onConnectionFailed: ConnectionResult.getErrorCode() = "
-                + connectionResult.getErrorCode());
-
-        Toast.makeText(this,
-                "Could not connect to Google API Client: Error " + connectionResult.getErrorCode(),
-                Toast.LENGTH_SHORT).show();
+        Log.e(LOG_TAG, "onConnectionFailed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
+        Toast.makeText(this, "Could not connect to Google API Client: Error " + connectionResult.getErrorCode(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -161,6 +156,10 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
         GoogleMap mMap = getMap();
         mMap.addMarker(new MarkerOptions().position(currentLocation));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+        if (directionsRenderer != null) {
+            boolean isOnPath = new PathJSONParser().isLocationOnEdgeOrPath(currentLocation, directionsRenderer.polylinePoints, false, 1000);
+            Log.i("On path", String.valueOf(isOnPath));
+        }
     }
 
     @Override

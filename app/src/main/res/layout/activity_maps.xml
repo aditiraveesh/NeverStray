@@ -5,7 +5,9 @@
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.neverstray.neverstray.MapsActivity">
+    tools:context="com.neverstray.neverstray.MapsActivity"
+    map:uiZoomControls="true"
+    map:uiZoomGestures="true">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"

@@ -34,9 +34,8 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
     private PlaceAutocompleteAdapter mAdapterForDestination;
     private Place sourcePlace;
     private Place destinationPlace;
-    private DirectionsRenderer directionsRenderer;
 
-    private static final LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(
+    private static final LatLngBounds BOUNDS = new LatLngBounds(
             new LatLng(-34.041458, 150.790100), new LatLng(15, 75));
 
     @Override
@@ -55,13 +54,13 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
         AutoCompleteTextView mAutocompleteViewForSource = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextViewSource);
         mAutocompleteViewForSource.setOnItemClickListener(mAutocompleteClickListenerForSource);
 
-        mAdapterForSource = new PlaceAutocompleteAdapter(this, mGoogleApiClient, BOUNDS_GREATER_SYDNEY, null);
+        mAdapterForSource = new PlaceAutocompleteAdapter(this, mGoogleApiClient, BOUNDS, null);
         mAutocompleteViewForSource.setAdapter(mAdapterForSource);
 
         AutoCompleteTextView mAutocompleteViewForDestination = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextViewDestination);
         mAutocompleteViewForDestination.setOnItemClickListener(mAutocompleteClickListenerForDestination);
 
-        mAdapterForDestination = new PlaceAutocompleteAdapter(this, mGoogleApiClient, BOUNDS_GREATER_SYDNEY, null);
+        mAdapterForDestination = new PlaceAutocompleteAdapter(this, mGoogleApiClient, BOUNDS, null);
         mAutocompleteViewForDestination.setAdapter(mAdapterForDestination);
     }
 
@@ -128,7 +127,7 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
             destinationPlace = places.get(0);
             addMarkerOn(destinationPlace);
 
-            directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), getMap());
+            DirectionsRenderer directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), getMap());
             directionsRenderer.foo();
         }
     };

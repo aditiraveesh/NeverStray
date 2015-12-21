@@ -121,8 +121,8 @@ public class DirectionsRenderer {
                 }
 
                 polyLineOptions.addAll(polylinePoints);
-                polyLineOptions.width(4);
-                polyLineOptions.color(Color.GREEN);
+                polyLineOptions.width(8);
+                polyLineOptions.color(Color.BLUE);
             }
 
             PathJSONParser pathJSONParser = new PathJSONParser();

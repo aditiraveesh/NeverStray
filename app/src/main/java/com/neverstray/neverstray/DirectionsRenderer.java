@@ -29,7 +29,7 @@ public class DirectionsRenderer {
         this.googleMap = googleMap;
     }
 
-    protected void foo() {
+    protected void renderRoute() {
         String url = getMapsApiDirectionsUrl();
         ReadTask downloadTask = new ReadTask();
         downloadTask.execute(url);
@@ -39,8 +39,8 @@ public class DirectionsRenderer {
 
     private void addMarkers() {
         if (googleMap != null) {
-            googleMap.addMarker(new MarkerOptions().position(origin).title("Origin"));
-            googleMap.addMarker(new MarkerOptions().position(destination).title("Destination"));
+            googleMap.addMarker(new MarkerOptions().position(origin));
+            googleMap.addMarker(new MarkerOptions().position(destination));
 
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                     new LatLng(origin.latitude, origin.longitude), 17));

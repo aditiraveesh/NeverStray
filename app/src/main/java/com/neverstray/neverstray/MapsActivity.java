@@ -109,9 +109,8 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
                 places.release();
                 return;
             }
-
             sourcePlace = places.get(0);
-            addMarkerOn(sourcePlace);
+            updateMap();
         }
     };
 
@@ -124,19 +123,19 @@ public class MapsActivity extends FragmentActivity implements GoogleApiClient.Co
                 return;
             }
             destinationPlace = places.get(0);
-            addMarkerOn(destinationPlace);
-
-            directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), getMap());
-            directionsRenderer.foo();
+            updateMap();
         }
     };
 
-    private void addMarkerOn(Place place) {
-        LatLng placeLatLong = place.getLatLng();
-        GoogleMap mMap = getMap();
-        mMap.addMarker(new MarkerOptions().position(placeLatLong));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(placeLatLong));
-    };
+    private void updateMap() {
+        getMap().clear();
+        if(sourcePlace == null || destinationPlace == null) {
+            return;
+        }
+
+        directionsRenderer = new DirectionsRenderer(sourcePlace.getLatLng(), destinationPlace.getLatLng(), getMap());
+        directionsRenderer.renderRoute();
+    }
 
     private GoogleMap getMap() {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);

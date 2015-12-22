@@ -19,25 +19,20 @@ import java.util.List;
 
 public class DirectionsRenderer {
     private GoogleMap googleMap;
-    private LatLng origin;
-    private LatLng destination;
     protected ArrayList polylinePoints;
 
-    DirectionsRenderer(LatLng origin, LatLng destination, GoogleMap googleMap) {
-        this.origin = origin;
-        this.destination = destination;
+    DirectionsRenderer(GoogleMap googleMap) {
         this.googleMap = googleMap;
     }
 
-    protected void renderRoute() {
-        String url = getMapsApiDirectionsUrl();
+    protected void renderRoute(LatLng origin, LatLng destination) {
+        String url = getMapsApiDirectionsUrl(origin, destination);
         ReadTask downloadTask = new ReadTask();
         downloadTask.execute(url);
-
-        addMarkers();
+        addMarkers(origin, destination);
     }
 
-    private void addMarkers() {
+    private void addMarkers(LatLng origin, LatLng destination) {
         if (googleMap != null) {
             googleMap.addMarker(new MarkerOptions().position(origin));
             googleMap.addMarker(new MarkerOptions().position(destination));
@@ -55,11 +50,15 @@ public class DirectionsRenderer {
         }
     }
 
-    private String getMapsApiDirectionsUrl() {
+    private String getMapsApiDirectionsUrl(LatLng origin, LatLng destination) {
         String sensor = "sensor=false";
         String params = sensor + "&origin=" + origin.latitude + "," + origin.longitude + "&destination=" + destination.latitude + "," + destination.longitude;
         String output = "json";
         return "https://maps.googleapis.com/maps/api/directions/" + output + "?" + params;
+    }
+
+    protected boolean isShowingPath() {
+        return polylinePoints != null;
     }
 
     private class ReadTask extends AsyncTask<String, Void, String> {
@@ -124,10 +123,6 @@ public class DirectionsRenderer {
                 polyLineOptions.width(8);
                 polyLineOptions.color(Color.BLUE);
             }
-
-            PathJSONParser pathJSONParser = new PathJSONParser();
-            boolean isOnPath = pathJSONParser.isLocationOnEdgeOrPath(destination, polylinePoints, false, 1000);
-            Log.i("On path", String.valueOf(isOnPath));
 
             googleMap.addPolyline(polyLineOptions);
         }
